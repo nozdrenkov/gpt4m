@@ -1,0 +1,6 @@
+
+.DS_Store
+db
+models/*
+source_documents/*
+backend/__pycache__

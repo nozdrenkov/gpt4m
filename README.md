@@ -7,8 +7,8 @@ This is a web app allows doing semantic search on top of your files. Inspired by
 1. Install docker:
 
 - get [docker for mac](https://docs.docker.com/desktop/install/mac-install) (use Apple silicon chip if you have it)
-- install docker the app
-- open the app and accept docker agreements
+- install the docker app
+- open the docker app and accept docker agreements
 - use recommended settings
 - you can continue without signing in
 

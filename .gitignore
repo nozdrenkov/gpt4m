@@ -4,3 +4,6 @@ db
 models/*
 source_documents/*
 backend/__pycache__
+frontend/node_modules
+frontend/.next
+.env

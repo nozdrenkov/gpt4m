@@ -28,3 +28,17 @@ services:
       NEXT_PUBLIC_BACKEND_URL: http://backend:5555/query
     depends_on:
       - backend
+
+  ingest:
+    build:
+      context: ./ingest
+      dockerfile: Dockerfile
+    environment:
+      PERSIST_DIRECTORY: /data/db
+      EMBEDDINGS_MODEL_NAME: all-MiniLM-L6-v2
+      MODEL_N_CTX: 1000
+      TARGET_SOURCE_CHUNKS: 4
+      SOURCE_DIRECTORY: /data/source_documents
+    volumes:
+      - ${PWD}/db:/data/db
+      - ${PWD}/source_documents:/data/source_documents

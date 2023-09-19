@@ -87,15 +87,16 @@ LOADER_MAPPING = {
 
 
 def load_single_document(file_path: str) -> List[Document]:
-    file_path = 'AdderNet- Do We Really Need Multiplications in Deep Learning.pdf'
-    print('>>>>>>>>>>>>>>', file_path)
-    ext = "." + file_path.rsplit(".", 1)[-1]
-    if ext in LOADER_MAPPING:
-        loader_class, loader_args = LOADER_MAPPING[ext]
-        loader = loader_class(file_path, **loader_args)
-        return loader.load()
-
-    raise ValueError(f"Unsupported file extension '{ext}'")
+    try:
+        ext = "." + file_path.rsplit(".", 1)[-1]
+        if ext in LOADER_MAPPING:
+            loader_class, loader_args = LOADER_MAPPING[ext]
+            loader = loader_class(file_path, **loader_args)
+            return loader.load()
+        raise ValueError(f"Unsupported file extension '{ext}'")
+    except Exception as e:
+        print(f"Error processing {file_path}. Error: {e}")
+        return []
 
 
 def load_documents(source_dir: str, ignored_files: List[str] = []) -> List[Document]:
@@ -110,12 +111,15 @@ def load_documents(source_dir: str, ignored_files: List[str] = []) -> List[Docum
     filtered_files = [
         file_path for file_path in all_files if file_path not in ignored_files]
 
+    results = []
     with Pool(processes=os.cpu_count()) as pool:
-        results = []
-        with tqdm(total=len(filtered_files), desc='Loading new documents', ncols=80) as pbar:
+        try:
             for i, docs in enumerate(pool.imap_unordered(load_single_document, filtered_files)):
                 results.extend(docs)
                 pbar.update()
+        finally:
+            pool.close()
+            pool.join()
 
     return results
 
@@ -182,4 +186,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nProcess interrupted by the user. Exiting...")

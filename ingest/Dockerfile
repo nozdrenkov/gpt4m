@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.10-slim
+FROM --platform=linux/amd64 python:3.10
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,7 +16,7 @@ COPY . /app
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# CMD ["python", "ingest.py"]
+CMD ["python", "ingest.py"]
 
-EXPOSE 5000
-CMD ["python", "privateGptServer.py"]
+# EXPOSE 5000
+# CMD ["python", "privateGptServer.py"]

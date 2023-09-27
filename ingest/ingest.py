@@ -87,16 +87,31 @@ LOADER_MAPPING = {
 
 
 def load_single_document(file_path: str) -> List[Document]:
-    try:
-        ext = "." + file_path.rsplit(".", 1)[-1]
-        if ext in LOADER_MAPPING:
-            loader_class, loader_args = LOADER_MAPPING[ext]
-            loader = loader_class(file_path, **loader_args)
-            return loader.load()
-        raise ValueError(f"Unsupported file extension '{ext}'")
-    except Exception as e:
-        print(f"Error processing {file_path}. Error: {e}")
-        return []
+    if not os.path.exists(file_path):
+        raise ValueError(f"File {file_path} does not exist.")
+    ext = "." + file_path.rsplit(".", 1)[-1]
+    if ext in LOADER_MAPPING:
+        loader_class, loader_args = LOADER_MAPPING[ext]
+        loader = loader_class(file_path, **loader_args)
+        return loader.load()
+
+    raise ValueError(f"Unsupported file extension '{ext}'")
+
+
+# def load_documents(source_dir: str, ignored_files: List[str] = []) -> List[Document]:
+#     all_files = []
+#     for ext in LOADER_MAPPING:
+#         all_files.extend(
+#             glob.glob(os.path.join(source_dir, f"**/*{ext}"), recursive=True)
+#         )
+#     filtered_files = [
+#         file_path for file_path in all_files if file_path not in ignored_files]
+
+#     results = []
+#     for file_path in tqdm(filtered_files, desc='Loading new documents', ncols=80):
+#         results.extend(load_single_document(file_path))
+
+#     return results
 
 
 def load_documents(source_dir: str, ignored_files: List[str] = []) -> List[Document]:
@@ -111,15 +126,12 @@ def load_documents(source_dir: str, ignored_files: List[str] = []) -> List[Docum
     filtered_files = [
         file_path for file_path in all_files if file_path not in ignored_files]
 
-    results = []
     with Pool(processes=os.cpu_count()) as pool:
-        try:
+        results = []
+        with tqdm(total=len(filtered_files), desc='Loading new documents', ncols=80) as pbar:
             for i, docs in enumerate(pool.imap_unordered(load_single_document, filtered_files)):
                 results.extend(docs)
                 pbar.update()
-        finally:
-            pool.close()
-            pool.join()
 
     return results
 
@@ -182,11 +194,8 @@ def main():
     db.persist()
     db = None
 
-    print(f"Ingestion complete! You can now run privateGPT.py to query your documents")
+    print(f"Ingestion complete!")
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\nProcess interrupted by the user. Exiting...")
+    main()
